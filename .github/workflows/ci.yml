@@ -46,7 +46,7 @@ jobs:
           pip install bandit
 
       - name: Run Bandit (skip assert rule B101)
-        run: bandit -r . -x B101
+        run: bandit -r . --skip B101
 
   sca:
     name: Software Composition Analysis (pip-audit)
