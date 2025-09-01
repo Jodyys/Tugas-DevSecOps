@@ -77,7 +77,7 @@ jobs:
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
-          config-path: .gitleaks.toml  # abaikan atau sesuaikan jika tidak ada
+          config-path: .gitleaks.toml
 
   build_and_push:
     name: Build & Push Docker Image
