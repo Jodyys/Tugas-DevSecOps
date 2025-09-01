@@ -25,6 +25,7 @@ jobs:
   sast:
     name: Static Application Security Testing (Bandit)
     runs-on: ubuntu-latest
+    needs: test  # 👈 tambahkan ini
     steps:
       - uses: actions/checkout@v3
       - name: Install Bandit
@@ -35,6 +36,7 @@ jobs:
   sca:
     name: Software Composition Analysis (pip-audit)
     runs-on: ubuntu-latest
+    needs: test  # 👈 tambahkan ini
     steps:
       - uses: actions/checkout@v3
       - name: Install pip-audit
@@ -45,6 +47,7 @@ jobs:
   secret_scan:
     name: Secret Scan (Gitleaks)
     runs-on: ubuntu-latest
+    needs: test  # 👈 tambahkan ini juga
     steps:
       - uses: actions/checkout@v3
       - name: Run Gitleaks
@@ -55,7 +58,7 @@ jobs:
   build_and_push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: [test, sast, sca, secret_scan]
+    needs: [sast, sca, secret_scan]  # 👈 pastikan ini tetap
     steps:
       - uses: actions/checkout@v3
       - name: Log in to DockerHub
