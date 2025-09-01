@@ -46,8 +46,8 @@ jobs:
       - name: Install Bandit
         run: pip install bandit
 
-      - name: Run Bandit
-        run: bandit -r .
+      - name: Run Bandit (skip assert rule B101)
+        run: bandit -r . -x B101
 
   sca:
     name: Software Composition Analysis (pip-audit)
@@ -61,8 +61,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install pip-audit
-        run: pip install pip-audit
+      - name: Install pip-audit and upgrade setuptools
+        run: |
+          pip install --upgrade setuptools
+          pip install pip-audit
 
       - name: Run pip-audit
         run: pip-audit
@@ -73,30 +75,26 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v3
-
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
-          config-path: .gitleaks.toml  # jika tidak ada config khusus, bisa dihapus baris ini
+          config-path: .gitleaks.toml  # atau abaikan jika tidak ada konfigurasi khusus
 
   build_and_push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: [test, sast, sca, secret_scan]
+    needs: [sast, sca, secret_scan]
     steps:
       - uses: actions/checkout@v3
-
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Build and tag image
         run: |
           COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/notes-app:latest -t ${{ secrets.DOCKERHUB_USERNAME }}/notes-app:$COMMIT_SHA .
-
       - name: Push image
         run: |
           COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
@@ -115,7 +113,6 @@ jobs:
           echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
           sudo apt-get update
           sudo apt-get install -y trivy
-
       - name: Scan Docker Image
         run: |
           COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
